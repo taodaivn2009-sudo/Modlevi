@@ -1,24 +1,23 @@
-#include <ll/api/memory/Hook.h>
-#include <ll/api/memory/Memory.h>
+// 1. Dùng đường dẫn thư viện chính xác của template Wodlevi
+#include "pl/memory/Hook.h"
 
-// Khai báo Hook: Can thiệp vào hàm kiểm tra tay trái của Minecraft
-LL_TYPE_INSTANCE_HOOK(
+// 2. Sử dụng Macro Hook dành riêng cho Preloader
+PL_TYPE_INSTANCE_HOOK(
     AllowOffhandHook,
-    ll::memory::HookPriority::Normal,
-    void, // Bỏ qua class Item để không bị lỗi thiếu file
-    ll::memory::SymbolView("_ZNK4Item13allowOffhandEv"), 
+    pl::memory::HookPriority::Normal,
+    void, // Bỏ qua class Item để tránh lỗi định nghĩa
+    pl::memory::SymbolView("_ZNK4Item13allowOffhandEv"), 
     bool
 ) {
-    // Ép game luôn ghi nhận vật phẩm này có thể cầm ở tay trái
-    return true; 
+    return true; // Ép cho phép cầm tay trái
 }
 
-// Kỹ thuật khởi tạo tự động (Static Initializer)
-// Không cần quan tâm template dùng hàm Load() tên là gì, khối này tự động chạy!
-struct AutoEnableMod {
-    AutoEnableMod() {
-        ll::memory::HookRegistrar<AllowOffhandHook>().hook();
+// 3. Khởi tạo Hook bằng cấu trúc tĩnh (tự động chạy)
+struct AutoRegister {
+    AutoRegister() {
+        // Gọi hàm đăng ký Hook của Preloader
+        pl::memory::HookRegistrar<AllowOffhandHook>().hook();
     }
 };
 
-static AutoEnableMod g_auto_enable;
+static AutoRegister g_auto_reg;
