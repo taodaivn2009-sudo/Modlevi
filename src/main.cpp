@@ -1,21 +1,25 @@
-// Đổi ll thành pl
-#include "pl/memory/Hook.h" 
+#include "pl/memory/Hook.h"
 
-// Lưu ý: Nếu template Android của bạn không có sẵn thư mục mc/world/item/Item.h, 
-// bạn có thể xóa dòng include Item.h đi để tránh lỗi thiếu file tiếp theo.
-
-// Khai báo Hook theo chuẩn Preloader (Android)
+// 1. Khai báo Hook: Can thiệp vào hàm kiểm tra tay trái của Minecraft Android
 PL_TYPE_INSTANCE_HOOK(
     AllowOffhandHook,
     pl::memory::HookPriority::Normal,
-    void, // Dùng 'void' thay vì 'Item' nếu template không hỗ trợ sẵn class Item
+    void, // Dùng void để bỏ qua class Item, tránh lỗi thiếu file header
     pl::memory::SymbolView("_ZNK4Item13allowOffhandEv"), 
     bool
 ) {
-    return true; // Ép game luôn cho phép cầm trên tay trái
+    // Ép game luôn ghi nhận vật phẩm này có thể cầm ở tay trái
+    return true; 
 }
 
-// KHỞI TẠO MOD:
-// Bạn hãy tìm hàm khởi chạy mặc định của template (thường là ModLoad, OnLoad, hoặc tương tự) 
-// và dán dòng lệnh kích hoạt này vào bên trong:
-// pl::memory::HookRegistrar<AllowOffhandHook>().hook();
+// 2. Kỹ thuật khởi tạo tự động (Static Initializer)
+// Khối lệnh này sẽ tự động chạy ngầm ngay khi file .so được nạp vào bộ nhớ game
+struct AutoEnableMod {
+    AutoEnableMod() {
+        // Chính thức kích hoạt Hook
+        pl::memory::HookRegistrar<AllowOffhandHook>().hook();
+    }
+};
+
+// Khởi tạo một biến toàn cục để hệ thống tự động gọi cấu trúc AutoEnableMod ở trên
+static AutoEnableMod g_auto_enable;
