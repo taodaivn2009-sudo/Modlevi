@@ -1,5 +1,14 @@
-#include "mod/MyMod.h"
+#include "ll/api/memory/Hook.h"
+#include "ll/api/memory/Memory.h"
+#include "mc/world/item/Item.h"
 
-#include <pl/Mod.hpp>
-
-PL_REGISTER_MOD(clange_me::ClangeMeMod, clange_me::ClangeMeMod::instance());
+// Định nghĩa Hook cho phép cầm đồ tay trái
+LL_TYPE_INSTANCE_HOOK(
+    AllowOffhandHook,
+    ll::memory::HookPriority::Normal,
+    Item,
+    ll::memory::SymbolView("_ZNK4Item13allowOffhandEv"), 
+    bool
+) {
+    return true; 
+}
